@@ -18,6 +18,8 @@
 #include "G4UnitsTable.hh"
 #include "G4UIcmdWith3VectorAndUnit.hh"
 
+#include "/software/valgrind/install/include/valgrind/derivgrind.h"
+
 
 //----------------------------------------------------------------------------------------
   GateSourcePencilBeamMessenger::GateSourcePencilBeamMessenger(GateSourcePencilBeam* source)
@@ -125,7 +127,12 @@ void GateSourcePencilBeamMessenger::SetNewValue(G4UIcommand* command,G4String ne
   //Particle Properties If GenericIon
   if (command == pIonCmd) {pSourcePencilBeam->SetIonParameter(newValue);  }
   //Energy
-  if (command == pEnergyCmd) {pSourcePencilBeam->SetEnergy(pEnergyCmd->GetNewDoubleValue(newValue));  }
+  if (command == pEnergyCmd) {
+      double energy = pEnergyCmd->GetNewDoubleValue(newValue);
+      double one = 1.0;
+      VALGRIND_SET_DERIVATIVE(&energy,&one,8);
+      pSourcePencilBeam->SetEnergy(energy);
+  }
   if (command == pSigmaEnergyCmd) {pSourcePencilBeam->SetSigmaEnergy(pSigmaEnergyCmd->GetNewDoubleValue(newValue));  }
   //Position
   if (command == pPositionCmd)   pSourcePencilBeam->SetPosition(pPositionCmd->GetNew3VectorValue(newValue));
