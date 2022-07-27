@@ -66,6 +66,8 @@
 #include "GateTrajectoryNavigator.hh"
 // v. cuplov - optical photons
 
+#include "/software/valgrind/install/include/valgrind/derivgrind.h"
+
 ComptonRayleighData::ComptonRayleighData() { ; }
 
 ComptonRayleighData::ComptonRayleighData(ComptonRayleighData &aCRData) {
@@ -722,6 +724,22 @@ void GateToRoot::RecordEndOfEvent(const G4Event *event) {
 
 
                 if (m_rootHitFlag) m_treeHit->Fill();
+                { // Test of DerivGrind
+                  float edep = *(float*)(m_treeHit->GetBranch("edep")->GetAddress());
+                  float posX = *(float*)(m_treeHit->GetBranch("posX")->GetAddress());
+                  float posY = *(float*)(m_treeHit->GetBranch("posY")->GetAddress());
+                  float posZ = *(float*)(m_treeHit->GetBranch("posZ")->GetAddress());
+                  float edep_d, posX_d, posY_d, posZ_d;
+                  VALGRIND_GET_DERIVATIVE(&edep,&edep_d,4);
+                  VALGRIND_GET_DERIVATIVE(&posX,&posX_d,4);
+                  VALGRIND_GET_DERIVATIVE(&posY,&posY_d,4);
+                  VALGRIND_GET_DERIVATIVE(&posZ,&posZ_d,4);
+                  std::cout << "--------\n";
+                  std::cout << "edep: " << edep << " " << edep_d << "\n";
+                  std::cout << "posX: " << posX << " " << posX_d << "\n";
+                  std::cout << "posY: " << posY << " " << posY_d << "\n";
+                  std::cout << "posZ: " << posZ << " " << posZ_d << "\n";
+                }
             }
         }
 
